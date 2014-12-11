@@ -134,6 +134,38 @@ function dodajMeritve(){
 		data: JSON.stringify(podatkiZaDodat),
 		success: function (res) {
 		    $("#opozoriloDodaj").html("<p class='label label-success'>Uspešno dodano</p>");
+			//sistolicni, diastolicno
+			if(sistolicni < 90){
+				$("#opozoriloZaPodatke").html("<p>Imate prenizek sistolični tlak (hipotenzija), obvezno se oglasite pri zdravniku</p>");
+			}
+			else if(sistolicni < 120){
+				$("#opozoriloZaPodatke").html("<p>Vaš sistlični tlak je v vredu</p>");
+			}
+			else if(sistolicni < 140){
+				$("#opozoriloZaPodatke").html("<p>Vaš sistolični tlak je nekoliko previsok previsok.</p>");
+			}
+			else if(sistolicni < 180){
+				$("#opozoriloZaPodatke").html("<p>Vaš sistolični tlak je previsok previsok.Priporočamo vam obisk zdravnika</p>");
+			}
+			else if(sistolicni >= 180){
+				$("#opozoriloZaPodatke").html("<p>Vaš sistolični tlak je previsok. Prosimo  vas da se oglasite pri zdravniku</p>");
+			}
+			
+			if(diastolicni < 60){
+				$("#opozoriloZaPodatke").append("<p>Imate prenizek diastolični tlak (hipotenzija), obvezno se oglasite pri zdravniku</p>");
+			}
+			else if(diastolicni < 80){
+				$("#opozoriloZaPodatke").append("<p>Vaš diastolični tlak je v vredu</p>");
+			}
+			else if(diastolicni < 90){
+				$("#opozoriloZaPodatke").append("<p>Vaš diastolični tlak je nekoliko previsok previsok.</p>");
+			}
+			else if(diastolicni < 110){
+				$("#opozoriloZaPodatke").append("<p>Vaš diastolični tlak je previsok previsok.Priporočamo vam obisk zdravnika</p>");
+			}
+			else if(diastolicni >= 110){
+				$("#opozoriloZaPodatke").append("<p>Vaš diastolični tlak je previsok. Prosimo  vas da se oglasite pri zdravniku</p>");
+			}
 		},
 		error: function(err) {
 		    $("#opozoriloDodaj").html("<p class='label label-danger'>Napaka!</p>");
@@ -141,7 +173,142 @@ function dodajMeritve(){
 	});
 }
 
+function graf(){
+	prijavaId = prijava();
+	var oznaka="";
+	var ehrId = $("#prebraniID").val();
+	var izbrani= $("#zeljeniIzris").val();
+	if ($("#vitalniZnaki").is(':empty') || !ehrId || ehrId.trim().length == 0 ){
+		$("#opozoriloGraf").html("<p class='label label-warning'>Nimate podatkov za izris grafov</p>");
+	}
+	else{
+		$.ajax({
+			url: osnovniUrl + "/demographics/ehr/" + ehrId + "/party",
+	    	type: 'GET',
+	    	headers: {"Ehr-Session": prijavaId},
+	    	success: function (data) {
+					var AQL = '';
+					if(izbrani == 'SistolicniTlakC'){
+						AQL= "select "+
+								"a_a/data[at0001]/events[at0006]/time as time, " +
+									"a_a/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value as rezultat " +
+							"from EHR e[e/ehr_id/value='" + ehrId+ "']"+
+							"contains COMPOSITION a " +
+							"contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.blood_pressure.v1] " +
+							"offset 0 limit 31 ";
+						oznaka="Sistolični tlak";
+					}
+					else if(izbrani == 'DiastolicniTlakC'){
+						AQL = "select " +
+							"a_a/data[at0001]/events[at0006]/time as time, " +
+							"a_a/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value as rezultat " +
+						"from EHR e[e/ehr_id/value='" + ehrId+ "']" +
+						"contains COMPOSITION a " +
+						"contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.blood_pressure.v1] " +
+						"offset 0 limit 31 ";
+						oznaka="Diastolični tlak";
+					}
+					else if(izbrani  == 'PulzC'){
+						AQL= "select "+
+							"a_a/data[at0002]/events[at0003]/time as time, " +  
+							"a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value as rezultat "+
+						"from EHR e[e/ehr_id/value='" + ehrId+ "']"+
+						"contains COMPOSITION a "+
+						"contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.heart_rate-pulse.v1] " +
+						"offset 0 limit 31 "
+						oznaka="Pulz";
+					}
+					$.ajax({
+					    url: osnovniUrl + "/query?" + $.param({"aql": AQL}),
+					    type: 'GET',
+					    headers: {"Ehr-Session": prijavaId},
+					    success: function (rezultata) {
+							if(rezultata){
+								$("#izpisGraf").html("");
+								
+								var sirina = $("#grafSirina").width();
+								var visina = sirina/2;
+								var margin = {top:30, right:20, bottom: 40, left:40};
+								sirina = sirina- margin.left - margin.right;
+								visina= visina - margin.top - margin.bottom;
+								var x = d3.scale.ordinal().rangeRoundBands([0, sirina], .1);
+								var y = d3.scale.linear().range([visina, 0]);
+								var xAxis = d3.svg.axis().scale(x).orient("bottom");
+								var yAxis = d3.svg.axis().scale(y).orient("left")
+								var svg = d3.select("#izpisGraf").append("svg").attr("width", sirina + margin.left + margin.right).attr("height", visina + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+								var tabela=[];
+								var rezultati = rezultata.resultSet;
+								for (var i in rezultati) {
+									var date = new Date(rezultati[i].time.value);
+									 var stringDate =  date.getFullYear();
+									var a = { vrednost:rezultati[i].rezultat.magnitude ,cas: stringDate};
+						            tabela.push(a);
+						        }
+								
+								x.domain(tabela.map(function(tabela) { return tabela.cas; }));
+								y.domain([0, d3.max(tabela, function(tabela) { return tabela.vrednost; })]);
+								svg.append("g")
+									 .attr("class", "x axis")
+									 .attr("transform", "translate(0," + visina + ")")
+									 .call(xAxis);
 
+								svg.append("g")
+								  .attr("class", "y axis")
+								  .call(yAxis)
+								.append("text")
+								  .attr("transform", "rotate(-90)")
+								  .attr("y", 1)
+								  .attr("dy", ".1em")
+								  .style("text-anchor", "end")
+								  .text(oznaka)
+								  
+								   svg.selectAll("#izpisGraf")
+									 .data(tabela)
+									.enter()
+										.append("rect")
+										.attr("class", "bar")
+										.attr("x", function(tabela) { return x(tabela.cas); })
+										.attr("width", x.rangeBand())
+										.attr("y", function(tabela, i) { return y(tabela.vrednost); })
+										.attr("height", function(tabela) { return visina - y(tabela.vrednost); });
+								
+							}
+							else{
+								$("#opozoriloGraf").html("<p class='label label-warning'>Ni podatkov!</p>");
+							}
+							
+						},
+						error: function(err){
+							$("#opozoriloGraf").html("<p class='label label-danger'>Napaka!</p>");
+						}
+					});
+	//console.log(izrani);
+			},
+			error: function(err){
+				$("#opozoriloGraf").html("<p class='label label-danger'>Napaka!</p>");
+			}
+		});
+	
+
+	}
+}
+function transition(svg, start, end) {
+  var center = [960 / 2, 500 / 2],
+      i = d3.interpolateZoom(start, end);
+
+  svg
+      .attr("transform", transform(start))
+    .transition()
+      .delay(250)
+      .duration(i.duration * 2)
+      .attrTween("transform", function() { return function(t) { return transform(i(t)); }; })
+      .each("end", function() { d3.select(this).call(transition, end, start); });
+
+  function transform(p) {
+    var k = 960 / p[2];
+    return "translate(" + (center[0] - p[0] * k) + "," + (center[1] - p[1] * k) + ")scale(" + k + ")";
+  }
+}
 function meritve(){
 	prijavaId = prijava();
 	var ehrId = $("#prebraniID").val();
@@ -163,14 +330,14 @@ function meritve(){
 						"a_c/data[at0001]/events[at0006]/data[at0003]/items[at0004]/value as sistolic, "+
 						"a_c/data[at0001]/events[at0006]/data[at0003]/items[at0005]/value as diastolic, "+
 						"a_d/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value as pulz "+
-					"from EHR e[e/ehr_id/value='8c59db10-4f06-4c84-b57b-e688b4b8cdb0'] "+
+					"from EHR e[e/ehr_id/value='" + ehrId+ "']" +
 					"contains COMPOSITION a "+
 					"contains ( "+
 						"OBSERVATION a_a[openEHR-EHR-OBSERVATION.height.v1] and "+
 						"OBSERVATION a_b[openEHR-EHR-OBSERVATION.body_weight.v1] and "+
 						"OBSERVATION a_c[openEHR-EHR-OBSERVATION.blood_pressure.v1] and "+
 						"OBSERVATION a_d[openEHR-EHR-OBSERVATION.heart_rate-pulse.v1]) "+
-					"limit 100";
+					"limit 31";
 					$.ajax({
 					    url: osnovniUrl + "/query?" + $.param({"aql": AQL}),
 					    type: 'GET',
@@ -179,7 +346,6 @@ function meritve(){
 							var results = "<table class='table table-striped table-hover'><tr><th>Datum in ura</th><th>Višina</th><th>Teža</th><th>Sistolični tlak</th><th>Diastoličen tlak</th><th>Pulz</th></tr>";
 							if(rezultat){
 								var rezultati = rezultat.resultSet;
-								console.log(rezultat);
 								for (var i in rezultati) {
 						            results += "<tr><td>" + rezultati[i].cas.value + "</td><td>" + rezultati[i].visina.magnitude  + "</td><td>" + rezultati[i].teza.magnitude  + "</td><td>" + rezultati[i].sistolic.magnitude  +"</td><td>" + rezultati[i].diastolic.magnitude  +"</td><td>" + rezultati[i].pulz.magnitude  +"</td></tr>";
 						        }
@@ -190,6 +356,9 @@ function meritve(){
 								$("#opozoriloVzemi").html("<p class='label label-warning'>Ni podatkov!</p>");
 							}
 							
+						},
+						error: function(err){
+							$("#opozoriloVzemi").html("<p class='label label-danger'>Napaka!</p>");
 						}
 					});
 			},
