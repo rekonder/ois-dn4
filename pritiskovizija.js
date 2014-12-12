@@ -1,11 +1,51 @@
+
+    //<![CDATA[
+    
+    var invocation = new XMLHttpRequest();
+    var url = 'http://zdravniki.org/zdravniki';
+    var invocationHistoryText;
+    
+    function callOtherDomain(){
+        if(invocation)
+        {    
+            invocation.open('GET', url, true);
+            invocation.onreadystatechange = handler;
+            invocation.send(); 
+        }
+        else
+        {
+           
+        }
+        
+    }
+    function handler(evtXHR)
+    {
+        if (invocation.readyState == 4)
+        {
+                if (invocation.status == 200)
+                {
+                    console.log(invocation.responseXML);
+                    
+                    
+                }
+                else
+                    alert("Invocation Errors Occured");
+        }
+        else
+            dump("currently the application is at" + invocation.readyState);
+    }
+    //]]>
+    
+    
+    
+callOtherDomain();
 oznake = new Array()
 oznake[0] = "generator";
 oznake[1] = "uporaba";
 oznake[2] = "noviPodatki";
 oznake[3] = "pregledPodatkov";
+
 var osnovniUrl = 'https://rest.ehrscape.com/rest/v1';
-
-
 var uporabniskoIme = "ois.seminar";
 var koda = "ois4fri";
 
@@ -174,6 +214,7 @@ function dodajMeritve(){
 }
 
 function graf(){
+	$("#izpisGraf").html("");
 	prijavaId = prijava();
 	var oznaka="";
 	var ehrId = $("#prebraniID").val();
@@ -212,7 +253,7 @@ function graf(){
 						AQL= "select "+
 							"a_a/data[at0002]/events[at0003]/time as time, " +  
 							"a_a/data[at0002]/events[at0003]/data[at0001]/items[at0004]/value as rezultat "+
-						"from EHR e[e/ehr_id/value='" + ehrId+ "']"+
+						"from EHR e[e/ehr_id/value='" + ehrId + "']"+
 						"contains COMPOSITION a "+
 						"contains OBSERVATION a_a[openEHR-EHR-OBSERVATION.heart_rate-pulse.v1] " +
 						"offset 0 limit 31 "
@@ -223,8 +264,8 @@ function graf(){
 					    type: 'GET',
 					    headers: {"Ehr-Session": prijavaId},
 					    success: function (rezultata) {
+							console.log(rezultata);
 							if(rezultata){
-								$("#izpisGraf").html("");
 								
 								var sirina = $("#grafSirina").width();
 								var visina = sirina/2;
@@ -238,6 +279,7 @@ function graf(){
 								var svg = d3.select("#izpisGraf").append("svg").attr("width", sirina + margin.left + margin.right).attr("height", visina + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 								var tabela=[];
 								var rezultati = rezultata.resultSet;
+								console.log(rezultati.length);
 								for (var i in rezultati) {
 									var date = new Date(rezultati[i].time.value);
 									 var stringDate =  date.getFullYear();
@@ -292,24 +334,8 @@ function graf(){
 
 	}
 }
-function transition(svg, start, end) {
-  var center = [960 / 2, 500 / 2],
-      i = d3.interpolateZoom(start, end);
-
-  svg
-      .attr("transform", transform(start))
-    .transition()
-      .delay(250)
-      .duration(i.duration * 2)
-      .attrTween("transform", function() { return function(t) { return transform(i(t)); }; })
-      .each("end", function() { d3.select(this).call(transition, end, start); });
-
-  function transform(p) {
-    var k = 960 / p[2];
-    return "translate(" + (center[0] - p[0] * k) + "," + (center[1] - p[1] * k) + ")scale(" + k + ")";
-  }
-}
 function meritve(){
+	$("#izpisGraf").html("");
 	prijavaId = prijava();
 	var ehrId = $("#prebraniID").val();
 	if (!ehrId || ehrId.trim().length == 0) {
@@ -351,6 +377,7 @@ function meritve(){
 						        }
 						        results += "</table>";
 								$("#vitalniZnaki").append(results);
+								$("#opozoriloVzemi").html("<p class='label label-success'>Uspešno prebrano</p>");
 							}
 							else{
 								$("#opozoriloVzemi").html("<p class='label label-warning'>Ni podatkov!</p>");
