@@ -29,11 +29,7 @@ function ustvariMapo(){
 			lang= position.coords.latitude;
 			lon= position.coords.longitude; 
 			console.log(lang, lon);
-		});
-    } 
-	else {}
-	console.log(lang, lon);
-	var mapCanvas = document.getElementById('map-canvas');
+			var mapCanvas = document.getElementById('map-canvas');
 	
         var mapOptions = {
           center: new google.maps.LatLng(lang, lon),
@@ -41,6 +37,9 @@ function ustvariMapo(){
           mapTypeId: google.maps.MapTypeId.ROADMAP
         }
         var map = new google.maps.Map(mapCanvas, mapOptions)
+		});
+    } 
+	else {}
 }
 google.maps.event.addDomListener(window, 'load', ustvariMapo);
 function generatorZagon(){
