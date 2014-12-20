@@ -28,9 +28,11 @@ function ustvariMapo(){
 			console.log("neki1");
 			lang= position.coords.latitude;
 			lon= position.coords.longitude; 
+			console.log(lang, lon);
 		});
     } 
 	else {}
+	console.log(lang, lon);
 	var mapCanvas = document.getElementById('map-canvas');
 	
         var mapOptions = {
