@@ -19,22 +19,28 @@
 	<body>
 		<div class="container" >
 			<div class="row" id="glava">
-				<div class="col-xs-1" ><img src="http://www.fatherrickthomas.com/wp-content/uploads/2014/07/blood-pressure.jpg" width="100" height="100"/></div>  
-				<div class="col-xs-11" ><h1><b>PRITISKOVIZIJA</b></h1></div>
+				<div class="col-xs-2" ><img src="http://www.fatherrickthomas.com/wp-content/uploads/2014/07/blood-pressure.jpg" width="75%" height="100"/></div>  
+				<div class="col-xs-10" ><h1><b>PRITISKOVIZIJA</b></h1></div>
 
 			</div>
 			<div class="row" id="izbira">
 				<div class="col-xs-3"><button type="button" class="btn btn-primary btn-sm btn-block" onclick="izbira('uporaba');">Navodila uporabe</button></div>
-				<div class="col-xs-3"><button type="button" class="btn btn-primary btn-sm btn-block" onclick="izbira('generator');">Novi uporabnik</button></div>
+				<div class="btn-group col-xs-3">
+					<button type="button" class="btn btn-primary btn-sm btn-block dropdown-toggle col-xs-12" data-toggle="dropdown" aria-expanded="false">Dodaj osebo <span class="caret"></span></button>
+					<ul class="dropdown-menu" role="menu">
+						<li><a onclick="izbira('generator')">Novi uporabnik</a></li>
+						<li><a onclick="izbira('generatorRand')">Generator oseb</a></li>
+					</ul>
+				</div>
 				<div class="col-xs-3"><button type="button" class="btn btn-primary btn-sm btn-block" onclick="izbira('noviPodatki');">Dodaj meritve</button></div>
 				<div class="col-xs-3"><button type="button" class="btn btn-primary btn-sm btn-block" onclick="izbira('pregledPodatkov');" id="drugi">Izpisi meritev</button></div>
 			</div>
 			<div class="row" id="uporaba">
 				<h3>Navodila uporabe:</h3>
 				<ul>
-					<li><b>Novi uporabnik:</b></li>
-					<li><b>Dodaj meritve:</b></li>
-					<li><b>Izpisi meritev:</b></li>
+					<li><b>Novi uporabnik:</b><p>Tukaj lahko sami kreirate novega uporabnika.  </p></li>
+					<li><b>Dodaj meritve:</b><p>Tukaj vnesite meritve</p></li>
+					<li><b>Izpisi meritev:</b><p>Tukaj prvo vnesite vaš ehrId. Potem pritisnite gumb... Prikazali se vam bodo podatki vaših meritev v zadnjih 31 dni. Nato si lahko izrišite graf ki vam ustreza.</p></li>
 				</ul>
 			</div>
 			<div id="generator" style="display:none;">
@@ -59,7 +65,7 @@
 				<h3>Dodaj meritve:</h3>
 				<div class="row">
 					<div class="col-xs-2"><h5>Generirane osebe:</h5></div>
-					<div class="col-xs-4"><select class="form-control input-sm" id="preberiPredlogoBolnika"><option value=""></option></select></div>
+					<div class="col-xs-4"><select class="form-control input-sm" id="preberiPredlogoBolnika"></select></div>
 				</div>
 				<div class="row">
 					<div class="col-xs-6"><span class="label label-primary">ID:</span><input id="vpisaniID" type="text" class="form-control input-mini"/></div>
@@ -94,7 +100,7 @@
 				<h3>Preglej meritve:</h3>
 				<div class="row">
 					<div class="col-xs-2"><h5>Generirane osebe:</h5></div>
-					<div class="col-xs-4"><select class="form-control input-sm" id="preberiPredlogoBolnika1"><option value=""></option></select></div>
+					<div class="col-xs-4"><select class="form-control input-sm" id="preberiPredlogoBolnika1"></select></div>
 				</div>
 				<div class="row">
 					<div class="col-xs-6"><span class="label label-primary">ID:</span><input id="prebraniID" type="text" class="form-control input-mini"/></div>
@@ -117,6 +123,27 @@
 					<div class="col-xs-6" id= "grafSirina" size="auto">
 						<span id="izpisGraf"></span>
 					</div>
+				</div>
+			</div>
+			<div id="generatorRand" style="display:none;">
+				<h3>Generiraj določeno osebo</h3>
+				<div class= "row">
+					<div class="radio col-xs-6" id="radiogumbi">
+						<label><input type="radio" name="optradio" id="nizek">Oseba z prenizkim tlakom</label>
+					</div>
+				</div>
+				<div class= "row">
+					<div class="radio col-xs-6" id="radiogumbi">
+						<label><input type="radio" name="optradio" id="zdrav">Oseba ki je zdrava</label>
+					</div>
+				</div>
+				<div class= "row">
+					<div class="radio col-xs-6" id="radiogumbi">
+						<label><input type="radio" name="optradio" id="visok">Oseba z previsokim tlakom</label>
+					</div>
+				</div>
+				<div class="row">
+					<button type="button" class="btn btn-primary btn-xs col-xs-2" onclick="generator()">Generiraj osebo</button>
 				</div>
 			</div>
 		</div>
