@@ -6,6 +6,7 @@
 	    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet"> <!--vkljucis bootstrap-->
 	    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script> <!--vkljucis bootstrap -->
 		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<script src="https://maps.googleapis.com/maps/api/js"></script>
 		<script src="pritiskovizija.js"></script>
 		<style>
 	  		.btn {margin-top: 10px;}
@@ -122,8 +123,10 @@
 					</div>
 					<div class="col-xs-6" id= "grafSirina" size="auto">
 						<span id="izpisGraf"></span>
+						<div class="col-xs-12" id="map-canvas"></div>
 					</div>
 				</div>
+				
 			</div>
 			<div id="generatorRand" style="display:none;">
 				<h3>Generiraj določeno osebo</h3>

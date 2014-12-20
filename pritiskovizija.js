@@ -16,6 +16,31 @@ $(document).ready(function() {
 	});
 });
 
+function ustvariMapo(){
+	var lang;
+	var lon;
+	var sirina = $("#map-canvas").width();
+	var visina = sirina/2;
+    document.getElementById('map-canvas').style.width= sirina;
+	$("#map-canvas").height(visina);
+	if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position){
+			console.log("neki1");
+			lang= position.coords.latitude;
+			lon= position.coords.longitude; 
+		});
+    } 
+	else {}
+	var mapCanvas = document.getElementById('map-canvas');
+	
+        var mapOptions = {
+          center: new google.maps.LatLng(lang, lon),
+          zoom: 8,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+        var map = new google.maps.Map(mapCanvas, mapOptions)
+}
+google.maps.event.addDomListener(window, 'load', ustvariMapo);
 function generatorZagon(){
 	for(var i = 0; i<3; i++){
 		var info={
@@ -95,6 +120,9 @@ function izbira(id) {
 			izbira1.style.display = "none";}
 		else{
 			izbira1.style.display = "block";
+			if(id == oznake[3]){
+				ustvariMapo();
+			}
 		}
 	}
 }
