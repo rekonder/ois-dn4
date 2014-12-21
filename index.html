@@ -66,7 +66,7 @@
 				<h3>Dodaj meritve:</h3>
 				<div class="row">
 					<div class="col-xs-2"><h5>Generirane osebe:</h5></div>
-					<div class="col-xs-4"><select class="form-control input-sm" id="preberiPredlogoBolnika"></select></div>
+					<div class="col-xs-4"><select class="form-control input-sm" id="preberiPredlogoBolnika"><option value=""></option></select></div>
 				</div>
 				<div class="row">
 					<div class="col-xs-6"><span class="label label-primary">ID:</span><input id="vpisaniID" type="text" class="form-control input-mini"/></div>
@@ -98,48 +98,74 @@
 			</div>
 			
 			<div id="pregledPodatkov" style="display:none;">
-				<h3>Preglej meritve:</h3>
 				<div class="row">
-					<div class="col-xs-2"><h5>Generirane osebe:</h5></div>
-					<div class="col-xs-4"><select class="form-control input-sm" id="preberiPredlogoBolnika1"></select></div>
+					<h3 class="col-lg-12 col-md-12 col-sm-12">Preglej meritve:</h3>
 				</div>
 				<div class="row">
-					<div class="col-xs-6"><span class="label label-primary">ID:</span><input id="prebraniID" type="text" class="form-control input-mini"/></div>
-					<div class="col-xs-6"><span class="label label-primary">Grafi:</span><select class="form-control input-xs" id="zeljeniIzris"><option value="SistolicniTlakC">Sistolični tlak</option><option value="DiastolicniTlakC">Diastolični tlak</option> <option value="PulzC">Pulz</option></select>
+					<div class="col-lg-6 col-md-6 col-sm-6">
+						<div class="row">
+							<div class="col-lg-4 col-md-4 col-sm-4"><h5>Generirane osebe:</h5></div>
+							<div class="col-lg-8 col-md-8 col-sm-8f"><select class="form-control input-sm" id="preberiPredlogoBolnika1"><option value=""></option></select></div>
+						</div>
+						<div class="row">
+							<div class="col-lg-12 col-md-12 col-sm-12">
+								<span class="label label-primary">ID:</span><input id="prebraniID" type="text" class="form-control input-mini"/>
+								<div class="row">
+								<button type="button" class="btn btn-primary btn-xs col-lg-6 col-md-6 col-sm-6" onclick="meritve()">Preberi meritve vitalnih znakov</button>
+								</div>
+								<div class="row">
+									<div id="opozoriloVzemi"></div>
+								</div>
+								<div class="row">
+									<div class="col-lg-11 col-md-11 col-sm-11" id="vitalniZnaki"></div>
+								</div>
+							</div>
+						</div>
+						
 					</div>
-				</div>
-				<div class="row">
-					<div class="col-xs-6">
-					<button type="button" class="btn btn-primary btn-xs" onclick="meritve()">Preberi meritve vitalnih znakov</button>
-						<div id="opozoriloVzemi"></div></div>
 					
-					<div class="col-xs-6"><button type="button" class="btn btn-primary btn-xs" onclick="graf()">Izriši graf</button>
-						<div id="opozoriloGraf"></div>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-xs-6">
-						<span class="col-xs-12" id="vitalniZnaki"></span>
-					</div>
-					<div class="col-xs-6" id= "grafSirina" size="auto">
-						<span id="izpisGraf"></span>
-							<div class=" col-xs-12">
-								<button type="button" class="btn btn-primary btn-xs col-xs-12" onclick="prikaziMapo()">
-								Bolnišnice v krogu 50km
-								</button>
+					
+					<div class="col-lg-6 col-md-6 col-sm-6">
+						<div class="row"> <h1> </h1></div>
+						<div class="row">
+							<div class="col-lg-12 col-md-12 col-sm-12"><span class="label label-primary">Grafi:</span><select class="form-control input-xs" id="zeljeniIzris"><option value="SistolicniTlakC">Sistolični tlak</option><option value="DiastolicniTlakC">Diastolični tlak</option> <option value="PulzC">Pulz</option></select></div>
+							<div class="row">
+								<div class="col-lg-6 col-md-6 col-sm-6"><button type="button" class="btn btn-primary btn-xs" onclick="graf()">Izriši graf</button></div>
 							</div>
-							<div class="col-xs-12 panel-body" id="map-canvas" style="display:none" ></div>
-							<div class=" col-xs-12">
-								<button type="button" class="btn btn-primary btn-xs col-xs-12" onclick="zdravniskeUstanove()">
-								Zdravstvene ustanove v Sloveniji
-								</button>
+							<div class="row">
+								<div class="col-lg-6 col-md-6 col-sm-6" id="opozoriloGraf"></div>
 							</div>
-							<div class="col-xs-12 panel-body" id="ustanovevSloveniji" style="display:none" ></div>
+							<div class="row col-lg-12 col-md-12 col-sm-12"  id= "grafSirina" size="auto">
+								<span id="izpisGraf"></span>
+							</div>
+							<div class="row">
+									<div class=" col-lg-12 col-md-12 col-sm-12">
+									<button type="button" class="btn btn-primary btn-xs col-lg-12 col-md-12 col-sm-12" onclick="prikaziMapo()">
+									Bolnišnice v krogu 50km
+									</button>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 panel-body" id="map-canvas" style="display:none" ></div>
+								<div class=" col-lg-12 col-md-12 col-sm-12">
+									<button type="button" class="btn btn-primary btn-xs col-lg-12 col-md-12 col-sm-12" onclick="zdravniskeUstanove()">
+									Zdravstvene ustanove v Sloveniji
+									</button>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 panel-body" id="ustanovevSloveniji" style="display:none" ></div>
 							
+							</div>
 						</div>
 					</div>
-				
+			
+				</div>
 			</div>
+			
+			
+			
+			
+			
+			
+			
+			
 			<div id="generatorRand" style="display:none;">
 				<h3>Generiraj določeno osebo</h3>
 				<div class= "row">

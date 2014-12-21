@@ -1,6 +1,9 @@
 var bolnisnice;
 var map;
 var infowindow;
+var zaGraf = "";
+var oznaka="";
+
 $.getJSON( "out.json", function( data ) {
 	console.log(data);
 	var results = "<div class=\"row\"><div class=\"col-xs-12\"><table class='table table-striped table-hover'><tr><th>Naziv</th><th>Naslov</th><th>Poštna številka</th><th>Telefon</th></tr>";
@@ -28,7 +31,6 @@ $(document).ready(function() {
 		$("#prebraniID").val($('#preberiPredlogoBolnika1').val());
 	});
 });
-
 function prikaziMapo(){
 	$('#map-canvas').toggle();
 	if( $('#map-canvas').is(':visible') ) {
@@ -46,7 +48,6 @@ function ustvariMapo(){
 	$("#map-canvas").height(visina);
 	if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position){
-			console.log("neki1");
 			lang= position.coords.latitude;
 			lon= position.coords.longitude; 
 			console.log(lang, lon);
@@ -64,37 +65,15 @@ function ustvariMapo(){
 			  icon: 'http://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
 			});
 			
-			var request = {
+			var zahteva = {
 				location: mere,
 				radius: '50000',
 				types: ['hospital']
 			  };
 			infowindow = new google.maps.InfoWindow();
-			service = new google.maps.places.PlacesService(map);
+			var service = new google.maps.places.PlacesService(map);
 			console.log('dds');
-			service.nearbySearch(request, hospitals);
-			//console.log(bolnisnice);
-			/*var geocoder = new google.maps.Geocoder();
-			for(var i = 0; i <=1;i++){
-			geocoder.geocode({
-			"address": bolnisnice[i].naslov + bolnisnice[i].posta,
-			}, function(results) {
-					console.log(results);
-					var beachMarker = new google.maps.Marker({
-						position: results[0].geometry.location,
-						map: map,
-						icon: 'http://maps.google.com/mapfiles/kml/shapes/hospitals.png'
-				 }); 
-					var infowindow = new google.maps.InfoWindow({
-						content:"Hello World!"
-					});
-
-					google.maps.event.addListener(marker, 'click', function() {
-						infowindow.open(map,marker);
-					});
-				});
-			}*/
-			//console.log(script);
+			service.nearbySearch(zahteva, hospitals);
 		});
     } 
 	else {}
@@ -365,9 +344,7 @@ function dodajMeritve(){
 }
 
 function graf(){
-	$("#izpisGraf").html("");
 	prijavaId = prijava();
-	var oznaka="";
 	var ehrId = $("#prebraniID").val();
 	var izbrani= $("#zeljeniIzris").val();
 	if ($("#vitalniZnaki").is(':empty') || !ehrId || ehrId.trim().length == 0 ){
@@ -416,53 +393,11 @@ function graf(){
 					    headers: {"Ehr-Session": prijavaId},
 					    success: function (rezultata) {
 							console.log(rezultata);
+							
 							if(rezultata){
+								zaGraf = rezultata
+								noviGraf(rezultata);
 								
-								var sirina = $("#grafSirina").width();
-								var visina = sirina/2;
-								var margin = {top:30, right:20, bottom: 40, left:40};
-								sirina = sirina- margin.left - margin.right;
-								visina= visina - margin.top - margin.bottom;
-								var x = d3.scale.ordinal().rangeRoundBands([0, sirina], .1);
-								var y = d3.scale.linear().range([visina, 0]);
-								var xAxis = d3.svg.axis().scale(x).orient("bottom");
-								var yAxis = d3.svg.axis().scale(y).orient("left")
-								var svg = d3.select("#izpisGraf").append("svg").attr("width", sirina + margin.left + margin.right).attr("height", visina + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-								var tabela=[];
-								var rezultati = rezultata.resultSet;
-								for (var i in rezultati) {
-									var date = new Date(rezultati[i].time.value);
-									 var stringDate =  date.getDate()+ "."+ (date.getMonth() +1) + "." + date.getYear() ;
-									var a = { vrednost:rezultati[i].rezultat.magnitude ,cas: stringDate};
-						            tabela.push(a);
-						        }
-								
-								x.domain(tabela.map(function(tabela) { return tabela.cas; }));
-								y.domain([0, d3.max(tabela, function(tabela) { return tabela.vrednost; })]);
-								svg.append("g")
-									 .attr("class", "x axis")
-									 .attr("transform", "translate(0," + visina + ")")
-									 .call(xAxis);
-
-								svg.append("g")
-								  .attr("class", "y axis")
-								  .call(yAxis)
-								.append("text")
-								  .attr("transform", "rotate(-90)")
-								  .attr("y", 1)
-								  .attr("dy", ".1em")
-								  .style("text-anchor", "end")
-								  .text(oznaka)
-								  
-								   svg.selectAll("#izpisGraf")
-									 .data(tabela)
-									.enter()
-										.append("rect")
-										.attr("class", "bar")
-										.attr("x", function(tabela) { return x(tabela.cas); })
-										.attr("width", x.rangeBand())
-										.attr("y", function(tabela, i) { return y(tabela.vrednost); })
-										.attr("height", function(tabela) { return visina - y(tabela.vrednost); });
 								
 							}
 							else{
@@ -484,7 +419,66 @@ function graf(){
 
 	}
 }
+function noviGraf(rezultata){
+	$("#izpisGraf").html("");
+	$("#grafSirina").html();
+	if(rezultata != ""){
+	var sirina = $("#grafSirina").width();
+	var visina = sirina/2;
+	var margin = {top:30, right:20, bottom: 60, left:40};
+	sirina = sirina- margin.left - margin.right;
+	visina= visina - margin.top - margin.bottom;
+	var x = d3.scale.ordinal().rangeRoundBands([0, sirina], .1);
+	var y = d3.scale.linear().range([visina, 0]);
+	var xAxis = d3.svg.axis().scale(x).orient("bottom");
+	var yAxis = d3.svg.axis().scale(y).orient("left")
+	var svg = d3.select("#izpisGraf").append("svg").attr("width", sirina + margin.left + margin.right).attr("height", visina + margin.top + margin.bottom).append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	var tabela=[];
+	var rezultati = rezultata.resultSet;
+	for (var i in rezultati) {
+		var date = new Date(rezultati[i].time.value);
+		var stringDate =  date.getDate()+ "."+ (date.getMonth() +1) + "." + date.getFullYear() ;
+		var a = { vrednost:rezultati[i].rezultat.magnitude ,cas: stringDate};
+		tabela.push(a);
+	}
+								
+	x.domain(tabela.map(function(tabela) { return tabela.cas; }));
+	y.domain([0, d3.max(tabela, function(tabela) { return tabela.vrednost; })]);
+		svg.append("g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + visina + ")")
+		.call(xAxis)
+		.selectAll("text")
+		.style("text-anchor", "end")
+		.attr("dx", "-.5em")
+		.attr("dy", "-.50em")
+		.attr("transform", "rotate(-90)" );
+
+		svg.append("g")
+		.attr("class", "y axis")
+		.call(yAxis)
+		.append("text")
+		.attr("transform", "rotate(-90)")
+		.attr("y", 1)
+		.attr("dy", ".1em")
+		.style("text-anchor", "end")
+		.text(oznaka)
+								  
+		svg.selectAll("#izpisGraf")
+		.data(tabela)
+		.enter()
+			.append("rect")
+			.attr("class", "bar")
+			.attr("x", function(tabela) { return x(tabela.cas); })
+			.attr("width", x.rangeBand())
+			.attr("y", function(tabela, i) { return y(tabela.vrednost); })
+			.attr("height", function(tabela) { return visina - y(tabela.vrednost); });
+		}
+
+}
 function meritve(){
+	zaGraf="";
+	oznaka="";
 	$("#izpisGraf").html("");
 	prijavaId = prijava();
 	var ehrId = $("#prebraniID").val();
@@ -519,7 +513,7 @@ function meritve(){
 					    type: 'GET',
 					    headers: {"Ehr-Session": prijavaId},
 					    success: function (rezultat) {
-							var results = "<div class=\"row\"><div class=\"col-xs-6\"><table class='table table-striped table-hover'><tr><th>Datum in ura</th><th>Višina</th><th>Teža</th><th>Sistolični tlak</th><th>Diastoličen tlak</th><th>Pulz</th></tr>";
+							var results = "<div><table class='table table-striped table-hover'><tr><th>Datum in ura</th><th>Višina</th><th>Teža</th><th>Sistolični tlak</th><th>Diastoličen tlak</th><th>Pulz</th></tr>";
 							if(rezultat){
 								var povprecjeSis = 0;
 								var povprecjeDias = 0;
@@ -539,7 +533,7 @@ function meritve(){
 									$("#vitalniZnaki").append("<h3>Vaš sistolični ali diastolični tlak je prenizek. Prosimo vas da se oglasite pri zdravniku</h3>");
 								}
 								
-						        results += "</table></div></div";
+						        results += "</table></div>";
 								$("#vitalniZnaki").append(results);
 								$("#opozoriloVzemi").html("<p class='label label-success'>Uspešno prebrano</p>");
 							}
@@ -562,3 +556,6 @@ function meritve(){
 function zdravniskeUstanove(){
 	$('#ustanovevSloveniji').toggle();
 }
+window.addEventListener('resize', function(event){
+  noviGraf(zaGraf)
+});
