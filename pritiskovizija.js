@@ -4,15 +4,6 @@ var infowindow;
 var zaGraf = "";
 var oznaka="";
 
-$.getJSON( "out.json", function( data ) {
-	console.log(data);
-	var results = "<div class=\"row\"><div class=\"col-xs-12\"><table class='table table-striped table-hover'><tr><th>Naziv</th><th>Naslov</th><th>Poštna številka</th><th>Telefon</th></tr>";
-	for (var i = 0; i < data.length; i++) {
-		results += "<tr><td>" + data[i].ime+ "</td><td>" + data[i].naslov  + "</td><td>" + data[i].posta + "</td><td>" + data[i].telefon  +"</td></tr>";
-	}
-	results += "</table></div></div";
-	$("#ustanovevSloveniji").html(results);
-});
 
 oznake = new Array();
 oznake[0] = "generator";
@@ -24,81 +15,33 @@ var index= 1;
 var osnovniUrl = 'https://rest.ehrscape.com/rest/v1';
 var uporabniskoIme = "ois.seminar";
 var koda = "ois4fri";
+//zazeni generator
 generatorZagon();
+//nalozi datoteko out.js
+$.getJSON( "out.json", function( data ) {
+	//console.log(data);
+	var results = "<div class=\"row\"><div class=\"col-xs-12\"><table class='table table-striped table-hover'><tr><th>Naziv</th><th>Naslov</th><th>Poštna številka</th><th>Telefon</th></tr>";
+	for (var i = 0; i < data.length; i++) {
+		results += "<tr><td>" + data[i].ime+ "</td><td>" + data[i].naslov  + "</td><td>" + data[i].posta + "</td><td>" + data[i].telefon  +"</td></tr>";
+	}
+	results += "</table></div></div";
+	$("#ustanovevSloveniji").html(results);
+});
+function prijava() {
+    var odgovor = $.ajax({
+        type: "POST",
+        url: osnovniUrl + "/session?username=" + encodeURIComponent(uporabniskoIme) +
+                "&password=" + encodeURIComponent(koda),
+        async: false
+    });
+    return odgovor.responseJSON.sessionId;
+}
 $(document).ready(function() {
 	$('#preberiPredlogoBolnika1').on('change', function() {
 		$("#vpisaniID").val($('#preberiPredlogoBolnika1').val());
 		$("#prebraniID").val($('#preberiPredlogoBolnika1').val());
 	});
 });
-function prikaziMapo(){
-	$('#map-canvas').toggle();
-	if( $('#map-canvas').is(':visible') ) {
-    	ustvariMapo();
-	}
-
-}
-function ustvariMapo(){
-	var lang;
-	var lon;
-	var sirina = $("#map-canvas").width();
-	var visina = sirina/2;
-	console.log(sirina,visina);
-    document.getElementById('map-canvas').style.width= sirina;
-	$("#map-canvas").height(visina);
-	if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position){
-			lang= position.coords.latitude;
-			lon= position.coords.longitude; 
-			console.log(lang, lon);
-			var mapCanvas = document.getElementById('map-canvas');
-			var mere = new google.maps.LatLng(lang, lon);
-			var mapOptions = {
-				center: mere,
-				zoom: 12,
-				mapTypeId: google.maps.MapTypeId.ROADMAP
-			}
-			map = new google.maps.Map(mapCanvas, mapOptions);
-			var marker = new google.maps.Marker({
-			  position: mere,
-			  map: map,
-			  icon: 'http://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
-			});
-			
-			var zahteva = {
-				location: mere,
-				radius: '50000',
-				types: ['hospital']
-			  };
-			infowindow = new google.maps.InfoWindow();
-			var service = new google.maps.places.PlacesService(map);
-			console.log('dds');
-			service.nearbySearch(zahteva, hospitals);
-		});
-    } 
-	else {}
-	google.maps.event.addDomListener(window, 'load', ustvariMapo);
-}
-function hospitals(results, status) {
-  if (status == google.maps.places.PlacesServiceStatus.OK) {
-	console.log(results);
-    for (var i = 0; i < results.length; i++) {
-		createMarker(results[i]);
-	}
-  }
-}
-function createMarker(results){
-	var mere = new google.maps.LatLng(results.geometry.location.k, results.geometry.location.D);
-			var marker = new google.maps.Marker({
-				position: mere,
-				map: map
-			});
-			google.maps.event.addListener(marker, 'click', function() {
-				console.log(results.name);
-				infowindow.setContent(results.name + " " + results.vicinity);
-				infowindow.open(map, this);
-			});
-}
 
 function generatorZagon(){
 	for(var i = 0; i<3; i++){
@@ -166,6 +109,78 @@ function generatorPodatki(index){
 		datum.setDate(datum.getDate() + 1);
 	}
 }
+//toggle map
+function prikaziMapo(){
+	$('#pano').toggle();
+	if( $('#pano').is(':visible') ) {
+    	ustvariMapo();
+	}
+
+}
+
+//nova mapa
+function ustvariMapo(){
+	var lang;
+	var lon;
+	var sirina = $("#pano").width();
+	var visina = sirina/2;
+	//console.log(sirina,visina);
+    document.getElementById('pano').style.width= sirina;
+	$("#pano").height(visina);
+	if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position){
+			lang= position.coords.latitude;
+			lon= position.coords.longitude; 
+			//console.log(lang, lon);
+			var panoNajdi = document.getElementById('pano');
+			var mere = new google.maps.LatLng(lang, lon);
+			var mapOptions = {
+				center: mere,
+				zoom: 12,
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			}
+			map = new google.maps.Map(panoNajdi, mapOptions);
+			var marker = new google.maps.Marker({
+			  position: mere,
+			  map: map,
+			  icon: 'http://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
+			});
+			
+			var zahteva = {
+				location: mere,
+				radius: '50000',
+				types: ['hospital']
+			  };
+			infowindow = new google.maps.InfoWindow();
+			var service = new google.maps.places.PlacesService(map);
+			console.log('dds');
+			service.nearbySearch(zahteva, hospitals);
+		});
+    } 
+	else {}
+	google.maps.event.addDomListener(window, 'load', ustvariMapo);
+}
+//markiraj mapo
+function hospitals(results, status) {
+  if (status == google.maps.places.PlacesServiceStatus.OK) {
+	//console.log(results);
+    for (var i = 0; i < results.length; i++) {
+		createMarker(results[i]);
+	}
+  }
+}
+function createMarker(results){
+	var mere = new google.maps.LatLng(results.geometry.location.k, results.geometry.location.D);
+		var marker = new google.maps.Marker({
+			position: mere,
+			map: map
+		});
+		google.maps.event.addListener(marker, 'click', function() {
+			console.log(results.name);
+			infowindow.setContent(results.name + " " + results.vicinity);
+			infowindow.open(map, this);
+		});
+}
 function izbira(id) {
 	for (var i = 0;i<oznake.length;i++) {
 		var izbira1 = document.getElementById(oznake[i]);
@@ -177,15 +192,6 @@ function izbira(id) {
 	}
 }
 
-function prijava() {
-    var odgovor = $.ajax({
-        type: "POST",
-        url: osnovniUrl + "/session?username=" + encodeURIComponent(uporabniskoIme) +
-                "&password=" + encodeURIComponent(koda),
-        async: false
-    });
-    return odgovor.responseJSON.sessionId;
-}
 
 function narediNovegaUporabnika(data,index){
 	prijavaId = prijava();
@@ -392,7 +398,7 @@ function graf(){
 					    type: 'GET',
 					    headers: {"Ehr-Session": prijavaId},
 					    success: function (rezultata) {
-							console.log(rezultata);
+							//console.log(rezultata);
 							
 							if(rezultata){
 								zaGraf = rezultata
@@ -449,9 +455,9 @@ function noviGraf(rezultata){
 		.attr("transform", "translate(0," + visina + ")")
 		.call(xAxis)
 		.selectAll("text")
-		.style("text-anchor", "end")
-		.attr("dx", "-.5em")
 		.attr("dy", "-.50em")
+		.attr("dx", "-.5em")
+		.style("text-anchor", "end")
 		.attr("transform", "rotate(-90)" );
 
 		svg.append("g")
@@ -525,7 +531,7 @@ function meritve(){
 						        }
 								povprecjeSis = povprecjeSis/rezultati.length;
 								povprecjeDias = povprecjeDias/rezultati.length;
-								console.log(povprecjeSis,povprecjeDias);
+								//console.log(povprecjeSis,povprecjeDias);
 								if(povprecjeSis > 150 || povprecjeDias > 95){
 									$("#vitalniZnaki").append("<h3>Vaš sistolični ali diastolični tlak je previsok. Prosimo vas da se oglasite pri zdravniku</h3>");
 								}
