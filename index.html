@@ -6,7 +6,7 @@
 	    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet"> <!--vkljucis bootstrap-->
 	    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script> <!--vkljucis bootstrap -->
 		<script src="http://d3js.org/d3.v3.min.js"></script>
-		<script src="https://maps.googleapis.com/maps/api/js"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
 		<script src="pritiskovizija.js"></script>
 		<style>
 	  		.btn {margin-top: 10px;}
@@ -119,13 +119,25 @@
 				</div>
 				<div class="row">
 					<div class="col-xs-6">
-						<span id="vitalniZnaki"></span>
+						<span class="col-xs-12" id="vitalniZnaki"></span>
 					</div>
 					<div class="col-xs-6" id= "grafSirina" size="auto">
 						<span id="izpisGraf"></span>
-						<div class="col-xs-12" id="map-canvas"></div>
+							<div class=" col-xs-12">
+								<button type="button" class="btn btn-primary btn-xs col-xs-12" onclick="prikaziMapo()">
+								Bolnišnice v krogu 50km
+								</button>
+							</div>
+							<div class="col-xs-12 panel-body" id="map-canvas" style="display:none" ></div>
+							<div class=" col-xs-12">
+								<button type="button" class="btn btn-primary btn-xs col-xs-12" onclick="zdravniskeUstanove()">
+								Zdravstvene ustanove v Sloveniji
+								</button>
+							</div>
+							<div class="col-xs-12 panel-body" id="ustanovevSloveniji" style="display:none" ></div>
+							
+						</div>
 					</div>
-				</div>
 				
 			</div>
 			<div id="generatorRand" style="display:none;">

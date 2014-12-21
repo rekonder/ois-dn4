@@ -1,3 +1,16 @@
+var bolnisnice;
+var map;
+var infowindow;
+$.getJSON( "out.json", function( data ) {
+	console.log(data);
+	var results = "<div class=\"row\"><div class=\"col-xs-12\"><table class='table table-striped table-hover'><tr><th>Naziv</th><th>Naslov</th><th>Poštna številka</th><th>Telefon</th></tr>";
+	for (var i = 0; i < data.length; i++) {
+		results += "<tr><td>" + data[i].ime+ "</td><td>" + data[i].naslov  + "</td><td>" + data[i].posta + "</td><td>" + data[i].telefon  +"</td></tr>";
+	}
+	results += "</table></div></div";
+	$("#ustanovevSloveniji").html(results);
+});
+
 oznake = new Array();
 oznake[0] = "generator";
 oznake[1] = "uporaba";
@@ -16,11 +29,19 @@ $(document).ready(function() {
 	});
 });
 
+function prikaziMapo(){
+	$('#map-canvas').toggle();
+	if( $('#map-canvas').is(':visible') ) {
+    	ustvariMapo();
+	}
+
+}
 function ustvariMapo(){
 	var lang;
 	var lon;
 	var sirina = $("#map-canvas").width();
 	var visina = sirina/2;
+	console.log(sirina,visina);
     document.getElementById('map-canvas').style.width= sirina;
 	$("#map-canvas").height(visina);
 	if (navigator.geolocation) {
@@ -30,18 +51,76 @@ function ustvariMapo(){
 			lon= position.coords.longitude; 
 			console.log(lang, lon);
 			var mapCanvas = document.getElementById('map-canvas');
-	
-        var mapOptions = {
-          center: new google.maps.LatLng(lang, lon),
-          zoom: 8,
-          mapTypeId: google.maps.MapTypeId.ROADMAP
-        }
-        var map = new google.maps.Map(mapCanvas, mapOptions)
+			var mere = new google.maps.LatLng(lang, lon);
+			var mapOptions = {
+				center: mere,
+				zoom: 12,
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			}
+			map = new google.maps.Map(mapCanvas, mapOptions);
+			var marker = new google.maps.Marker({
+			  position: mere,
+			  map: map,
+			  icon: 'http://maps.google.com/mapfiles/kml/paddle/orange-blank.png'
+			});
+			
+			var request = {
+				location: mere,
+				radius: '50000',
+				types: ['hospital']
+			  };
+			infowindow = new google.maps.InfoWindow();
+			service = new google.maps.places.PlacesService(map);
+			console.log('dds');
+			service.nearbySearch(request, hospitals);
+			//console.log(bolnisnice);
+			/*var geocoder = new google.maps.Geocoder();
+			for(var i = 0; i <=1;i++){
+			geocoder.geocode({
+			"address": bolnisnice[i].naslov + bolnisnice[i].posta,
+			}, function(results) {
+					console.log(results);
+					var beachMarker = new google.maps.Marker({
+						position: results[0].geometry.location,
+						map: map,
+						icon: 'http://maps.google.com/mapfiles/kml/shapes/hospitals.png'
+				 }); 
+					var infowindow = new google.maps.InfoWindow({
+						content:"Hello World!"
+					});
+
+					google.maps.event.addListener(marker, 'click', function() {
+						infowindow.open(map,marker);
+					});
+				});
+			}*/
+			//console.log(script);
 		});
     } 
 	else {}
+	google.maps.event.addDomListener(window, 'load', ustvariMapo);
 }
-google.maps.event.addDomListener(window, 'load', ustvariMapo);
+function hospitals(results, status) {
+  if (status == google.maps.places.PlacesServiceStatus.OK) {
+	console.log(results);
+    for (var i = 0; i < results.length; i++) {
+		createMarker(results[i]);
+	}
+  }
+}
+function createMarker(results){
+	var mere = new google.maps.LatLng(results.geometry.location.k, results.geometry.location.D);
+			var marker = new google.maps.Marker({
+				position: mere,
+				map: map
+			});
+			google.maps.event.addListener(marker, 'click', function() {
+				console.log(results.name);
+				infowindow.setContent(results.name + " " + results.vicinity);
+				infowindow.open(map, this);
+			});
+}
+
 function generatorZagon(){
 	for(var i = 0; i<3; i++){
 		var info={
@@ -50,7 +129,6 @@ function generatorZagon(){
 			spol: "MALE",
 			rojstniDatum: "1900-1-1"
 		}
-		console.log(info.rojstniDatum);
 		narediNovegaUporabnika(info, -2-i);
 		index = index+1;
 	}
@@ -62,18 +140,15 @@ function generator(){
 		spol: "MALE",
 		rojstniDatum: "1900-1-1"
 	}
-	console.log(info.rojstniDatum);
 	narediNovegaUporabnika(info, -1);
 	index = index+1;
 	
 }
 function generatorPodatki(index){
 	var datum= new Date(1930, 1,1);
-	console.log("neki");
 	for(var i = 0; i<15; i++){
 		var cas = datum.getFullYear() + "-" + datum.getMonth() + "-" + datum.getDate();
 		if(document.getElementById('visok').checked || index == -2){
-			console.log("visok");
 			//generiraj podatke za tezo, sistolicni tlak > 150, diastolicni tlak > .., pulz.., datum vnosa
 			var info={
 				datum:String(cas),
@@ -86,7 +161,6 @@ function generatorPodatki(index){
 			dodajNoveMeritve(info);
 		}
 		else if(document.getElementById('zdrav').checked || index == -3){
-			console.log("ok");
 			//generiraj podatke za tezo, sistolicni tlak 110<x<150, diastolicni tlak... ,pulz, datum vnosa
 			var info={
 				datum:String(cas),
@@ -99,7 +173,6 @@ function generatorPodatki(index){
 			dodajNoveMeritve(info);
 		}
 		else if(document.getElementById('nizek').checked || index == -4){
-			console.log("nizk");
 			//generiraj podatke za tezo, sistolicni tlak x<110. diastolicni tlak,..., pulz, datum vnosa
 			var info={
 				datum:String(cas),
@@ -121,9 +194,6 @@ function izbira(id) {
 			izbira1.style.display = "none";}
 		else{
 			izbira1.style.display = "block";
-			if(id == oznake[3]){
-				ustvariMapo();
-			}
 		}
 	}
 }
@@ -215,14 +285,12 @@ function noviUporabnik(){
 
 function dodajNoveMeritve(data1){
 	var ehrId =  $("#vpisaniID").val();
-	console.log($("#vpisaniID").val());
 	prijavaId = prijava();
 	$.ajaxSetup({
 		headers: {
 			"Ehr-Session": prijavaId
 		}
 	});
-	console.log(data1);
 	var podatkiZaDodat = {
 		"ctx/language": "en",
 		"ctx/territory": "SI",
@@ -453,10 +521,24 @@ function meritve(){
 					    success: function (rezultat) {
 							var results = "<div class=\"row\"><div class=\"col-xs-6\"><table class='table table-striped table-hover'><tr><th>Datum in ura</th><th>Višina</th><th>Teža</th><th>Sistolični tlak</th><th>Diastoličen tlak</th><th>Pulz</th></tr>";
 							if(rezultat){
+								var povprecjeSis = 0;
+								var povprecjeDias = 0;
 								var rezultati = rezultat.resultSet;
 								for (var i in rezultati) {
+									povprecjeSis = povprecjeSis + rezultati[i].sistolic.magnitude;
+									povprecjeDias = povprecjeDias + rezultati[i].pulz.magnitude;
 						            results += "<tr><td>" + rezultati[i].cas.value + "</td><td>" + rezultati[i].visina.magnitude  + "</td><td>" + rezultati[i].teza.magnitude  + "</td><td>" + rezultati[i].sistolic.magnitude  +"</td><td>" + rezultati[i].diastolic.magnitude  +"</td><td>" + rezultati[i].pulz.magnitude  +"</td></tr>";
 						        }
+								povprecjeSis = povprecjeSis/rezultati.length;
+								povprecjeDias = povprecjeDias/rezultati.length;
+								console.log(povprecjeSis,povprecjeDias);
+								if(povprecjeSis > 150 || povprecjeDias > 95){
+									$("#vitalniZnaki").append("<h3>Vaš sistolični ali diastolični tlak je previsok. Prosimo vas da se oglasite pri zdravniku</h3>");
+								}
+								else if(povprecjeSis < 90 || povprecjeDias < 60){
+									$("#vitalniZnaki").append("<h3>Vaš sistolični ali diastolični tlak je prenizek. Prosimo vas da se oglasite pri zdravniku</h3>");
+								}
+								
 						        results += "</table></div></div";
 								$("#vitalniZnaki").append(results);
 								$("#opozoriloVzemi").html("<p class='label label-success'>Uspešno prebrano</p>");
@@ -476,4 +558,7 @@ function meritve(){
 	    	}
 		});
 	}
+}
+function zdravniskeUstanove(){
+	$('#ustanovevSloveniji').toggle();
 }
